@@ -1,26 +1,80 @@
 #ifndef ANALIZATOR_SEM_H
 #define ANALIZATOR_SEM_H
-#include <stdbool.h>
-#define MAX_VARIABLES 100
 
 typedef enum {
-    TYPE_INT,
-    TYPE_DOUBLE,
-    TYPE_STRING,
-    TYPE_UNKNOWN
-} VarType;
+    intType,
+    varType,
+    doubleType,
+    stringType,
+    undefinedType
+} VAR_TYPE;
+
+typedef enum {
+    intArray,
+    doubleArray,
+    stringArray,
+    undefinedArray
+} ARRAY_TYPE;
+
+typedef enum {
+    equality,
+    higherEquality,
+    lessEquality,
+    higher,
+    less,
+    different,
+} CONDITION_TYPE;
+
+typedef enum {
+    additionExp,
+    subtractionExp,
+    multiplicationExp,
+    divisionExp,
+    undefinedExp
+} EXPRESSION_TYPE;
+
+typedef enum {
+    finc,
+    fdec
+} FOR_INC_TYPE;
+
+typedef enum {
+    fbigger,
+    fsmaller,
+    fhigherequality,
+    fsmallerequality
+} FOR_CONDITION_TYPE;
+
+typedef union {
+    int intValue;
+    double doubleValue;
+    char* stringValue;
+} VALUE_TYPE;
+
+typedef union {
+    int* integerArray;
+    double* doubleArray;
+    char** stringArray;
+} ARRAY_VALUE;
 
 typedef struct {
     char *name;
-    VarType type;
-} Variable;
+    VAR_TYPE type;
+    VALUE_TYPE valuestorage;
+} VARIABLE;
 
-Variable symbol_table[MAX_VARIABLES];
-int var_count;
+typedef struct {
+    char *name;
+    ARRAY_TYPE arrayType;
+    ARRAY_VALUE arrayValue;
+    int arraySize;
+} ARRAY_VARIABLE;
 
-void initialize_symbol_table();
-bool add_variable(char *name, VarType type);
-VarType get_variable_type(char *name);
-void check_variable_usage(char *var_name);
-
+typedef struct {
+    char *name;
+    char *accessName;
+    int id;
+    VAR_TYPE type;
+    VALUE_TYPE valuestorage;
+} PRIVATE_VARIABLE;
 #endif

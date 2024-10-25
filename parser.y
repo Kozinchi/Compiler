@@ -12,6 +12,7 @@ int yylex(void);
 %token VARIABLE_NAME NUM DNUM STRINGV
 %token ADDITION SUBTRACTION MULTIPLICATION DIVISION
 %type <ival> expression
+%type <sval> statement // Dodaj tę linijkę, aby określić typ dla statement
 
 %%
 
@@ -25,7 +26,6 @@ program:
 statement:
     VARIABLE_NAME ASSIGNMENT expression SEMICOLON
     {
-        // Dodaj zmienną do tabeli symboli
         add_variable($1, TYPE_INT); // Przykład: zakładamy, że to int
     }
     | IF '(' expression ')' statement ELSE statement
@@ -35,10 +35,9 @@ statement:
 
 // Wyrażenia
 expression:
-    NUM { $$ = $1; } // Przypisanie wartości do $$ (wynik wyrażenia)
+    NUM { $$ = $1; }
     | VARIABLE_NAME
     {
-        // Sprawdzenie użycia zmiennej
         check_variable_usage($1);
         $$ = get_variable_type($1);
     }
@@ -47,8 +46,8 @@ expression:
     | expression MULTIPLICATION expression { $$ = $1 * $3; }
     | expression DIVISION expression { $$ = $1 / $3; }
     | '(' expression ')' { $$ = $2; }
-    | STRINGV { $$ = 0; } // Obsługa łańcuchów, możesz to rozwinąć
-    | DNUM { $$ = (int)$1; } // Możesz to również rozwinąć
+    | STRINGV { $$ = 0; }
+    | DNUM { $$ = (int)$1; }
     ;
 
 // Błąd
@@ -61,4 +60,3 @@ int main(void) {
     initialize_symbol_table();
     return yyparse();
 }
-
