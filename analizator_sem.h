@@ -1,7 +1,8 @@
-#ifndef ANALIZATOR_SEM_H
-#define ANALIZATOR_SEM_H
+#ifndef SEMANTIC_ANALYZER_H
+#define SEMANTIC_ANALYZER_H
 
-typedef enum {
+typedef enum
+{
     intType,
     varType,
     doubleType,
@@ -9,23 +10,8 @@ typedef enum {
     undefinedType
 } VAR_TYPE;
 
-typedef enum {
-    intArray,
-    doubleArray,
-    stringArray,
-    undefinedArray
-} ARRAY_TYPE;
-
-typedef enum {
-    equality,
-    higherEquality,
-    lessEquality,
-    higher,
-    less,
-    different,
-} CONDITION_TYPE;
-
-typedef enum {
+typedef enum
+{
     additionExp,
     subtractionExp,
     multiplicationExp,
@@ -33,48 +19,52 @@ typedef enum {
     undefinedExp
 } EXPRESSION_TYPE;
 
-typedef enum {
-    finc,
-    fdec
-} FOR_INC_TYPE;
-
-typedef enum {
-    fbigger,
-    fsmaller,
-    fhigherequality,
-    fsmallerequality
-} FOR_CONDITION_TYPE;
-
-typedef union {
+typedef union
+{
     int intValue;
     double doubleValue;
     char* stringValue;
 } VALUE_TYPE;
 
-typedef union {
-    int* integerArray;
-    double* doubleArray;
-    char** stringArray;
-} ARRAY_VALUE;
-
-typedef struct {
+typedef struct
+{
     char *name;
     VAR_TYPE type;
-    VALUE_TYPE valuestorage;
+    VALUE_TYPE valueStorage;
 } VARIABLE;
 
-typedef struct {
-    char *name;
-    ARRAY_TYPE arrayType;
-    ARRAY_VALUE arrayValue;
-    int arraySize;
-} ARRAY_VARIABLE;
+typedef struct
+{
+    char instruction[256];
+} ASSEMBLY_INSTRUCTION;
 
-typedef struct {
-    char *name;
-    char *accessName;
-    int id;
-    VAR_TYPE type;
-    VALUE_TYPE valuestorage;
-} PRIVATE_VARIABLE;
+typedef struct StackNode
+{
+    ASSEMBLY_INSTRUCTION instruction;
+    struct StackNode *next;
+} STACK_NODE;
+
+typedef struct
+{
+    STACK_NODE *top;
+} STACK;
+
+typedef struct
+{
+    EXPRESSION_TYPE type;
+    int isAlreadyComputed;
+    const char *varName;
+} MATH_STACK_INSIDE;
+
+typedef struct MathStackNode
+{
+    MATH_STACK_INSIDE data;
+    struct MathStackNode *next;
+} MATH_STACK_NODE;
+
+typedef struct
+{
+    MATH_STACK_NODE *top;
+} MATH_STACK;
+
 #endif
