@@ -67,8 +67,8 @@ void assignVariable(STACK *stack, const char *name, VAR_TYPE type, VALUE_TYPE va
     if (type == intType)
     {
         sprintf(instr.instruction, "mov [%s], %d\n", name, value.intValue);
-    } else if (type == doubleType)
-    
+    }
+    else if (type == doubleType)
     {
         sprintf(instr.instruction, "mov [%s], %f\n", name, value.doubleValue);
     }

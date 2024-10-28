@@ -1,8 +1,7 @@
 #ifndef ASSEMBLY_GENERATOR_H
 #define ASSEMBLY_GENERATOR_H
-#include <stdio.h>
-
 #include "analizator_sem.h"
+#include <stdio.h>
 
 void createSection(FILE *file, const char* sectionName);
 void createStart(FILE *file);

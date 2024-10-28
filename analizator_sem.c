@@ -78,6 +78,7 @@ void performOperation(const char *var1Name, const char *var2Name, const char *op
     }
 
     VALUE_TYPE result;
+    
     VAR_TYPE resultType;
 
     resultType = (var1->type == doubleType || var2->type == doubleType) ? doubleType : intType;
@@ -86,7 +87,7 @@ void performOperation(const char *var1Name, const char *var2Name, const char *op
     {
         result.doubleValue = (var1->type == intType ? var1->valueStorage.intValue : var1->valueStorage.doubleValue) +
                              (var2->type == intType ? var2->valueStorage.intValue : var2->valueStorage.doubleValue);
-    } 
+    }
     else if (strcmp(op, "-") == 0)
     {
         result.doubleValue = (var1->type == intType ? var1->valueStorage.intValue : var1->valueStorage.doubleValue) -
@@ -114,15 +115,18 @@ void performOperation(const char *var1Name, const char *var2Name, const char *op
     }
 
     char resultVarName[100];
+    
     snprintf(resultVarName, sizeof(resultVarName), "%s_%s_%s", var1Name, var2Name, op);
 
     VALUE_TYPE value;
+    
     if (resultType == intType)
     {
         value.intValue = (int)result.doubleValue;
         addVariable(resultVarName, intType, value);
         printf("Result: %s %s %s = %d\n", var1Name, op, var2Name, value.intValue);
-    } else
+    }
+    else
     {
         value.doubleValue = result.doubleValue;
         addVariable(resultVarName, doubleType, value);

@@ -13,4 +13,3 @@ default: clean
 
 clean:
 	rm -f $(TARGET) parser.tab.c parser.tab.h parser.output lex.yy.c
-
