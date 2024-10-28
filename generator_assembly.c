@@ -1,102 +1,102 @@
-#include "generator_assembler.h"
+#include "generator_assembly.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-void generateAssemblyCode(const char *operation, const char *var1Name, const char *var2Name, const char *resultVarName, VALUE_TYPE result, VAR_TYPE resultType)
+void createSection(FILE *file, const char* sectionName)
 {
-    FILE *outputFile = fopen("output.asm", "a"); 
-    if (!outputFile)
-    {
-        perror("Error opening file");
-        return;
-    }
+    fprintf(file, "section .%s\n", sectionName);
+}
 
-    fprintf(outputFile, ";; Generating assembly code for %s %s %s\n", var1Name, operation, var2Name);
+void createStart(FILE *file)
+{
+    fprintf(file, "global _start\n");
+    fprintf(file, "_start:\n");
+}
+
+void end(FILE *file)
+{
+    fprintf(file, "mov eax, 1\n");
+    fprintf(file, "int 0x80\n");
+}
+
+void pushAddToCurrentFlowStack(STACK *mstack, STACK *currStack)
+{
+    ASSEMBLY_INSTRUCTION instr;
+    strcpy(instr.instruction, "ADD eax, ebx\n");
+    STACK_NODE *newNode = (STACK_NODE *)malloc(sizeof(STACK_NODE));
+    newNode->instruction = instr;
+    newNode->next = currStack->top;
+    currStack->top = newNode;
+}
+
+void pushSubtractToCurrentFlowStack(STACK *mstack, STACK *currStack)
+{
+    ASSEMBLY_INSTRUCTION instr;
+    strcpy(instr.instruction, "SUB eax, ebx\n");
+    STACK_NODE *newNode = (STACK_NODE *)malloc(sizeof(STACK_NODE));
+    newNode->instruction = instr;
+    newNode->next = currStack->top;
+    currStack->top = newNode;
+}
+
+void pushMultiplyToCurrentFlowStack(STACK *mstack, STACK *currStack)
+{
+    ASSEMBLY_INSTRUCTION instr;
+    strcpy(instr.instruction, "MUL ebx\n");
+    STACK_NODE *newNode = (STACK_NODE *)malloc(sizeof(STACK_NODE));
+    newNode->instruction = instr;
+    newNode->next = currStack->top;
+    currStack->top = newNode;
+}
+
+void pushDivideToCurrentFlowStack(STACK *mstack, STACK *currStack)
+{
+    ASSEMBLY_INSTRUCTION instr;
+    strcpy(instr.instruction, "DIV ebx\n");
+    STACK_NODE *newNode = (STACK_NODE *)malloc(sizeof(STACK_NODE));
+    newNode->instruction = instr;
+    newNode->next = currStack->top;
+    currStack->top = newNode;
+}
+
+void assignVariable(STACK *stack, const char *name, VAR_TYPE type, VALUE_TYPE value)
+{
+    ASSEMBLY_INSTRUCTION instr;
     
-    if (resultType == intType)
+    if (type == intType)
     {
-        fprintf(outputFile, "mov eax, %s\n", var1Name);
-        if (strcmp(operation, "+") == 0)
-        {
-            fprintf(outputFile, "add eax, %s\n", var2Name);
-        } 
-        else if (strcmp(operation, "-") == 0)
-        {
-            fprintf(outputFile, "sub eax, %s\n", var2Name);
-        } 
-        else if (strcmp(operation, "*") == 0)
-        {
-            fprintf(outputFile, "imul eax, %s\n", var2Name);
-        } 
-        else if (strcmp(operation, "/") == 0)
-        {
-            fprintf(outputFile, "xor edx, edx\n");
-            fprintf(outputFile, "div %s\n", var2Name);
-        } 
-        else
-        {
-            fprintf(stderr, "Error: Unsupported operation '%s'.\n", operation);
-        }
-        
-        fprintf(outputFile, "mov %s, eax\n", resultVarName);
-    } 
-    else if (resultType == doubleType)
+        sprintf(instr.instruction, "mov [%s], %d\n", name, value.intValue);
+    } else if (type == doubleType)
+    
     {
-        fprintf(outputFile, "movsd xmm0, [%s]\n", var1Name);
-        if (strcmp(operation, "+") == 0)
-        {
-            fprintf(outputFile, "addsd xmm0, [%s]\n", var2Name);
-        } 
-        else if (strcmp(operation, "-") == 0)
-        {
-            fprintf(outputFile, "subsd xmm0, [%s]\n", var2Name);
-        } 
-        else if (strcmp(operation, "*") == 0)
-        {
-            fprintf(outputFile, "mulsd xmm0, [%s]\n", var2Name);
-        } 
-        else if (strcmp(operation, "/") == 0)
-        {
-            fprintf(outputFile, "divsd xmm0, [%s]\n", var2Name);
-        } 
-        else
-        {
-            fprintf(stderr, "Error: Unsupported operation '%s'.\n", operation);
-        }
-        fprintf(outputFile, "movsd [%s], xmm0\n", resultVarName);
-    } 
-    else
-    {
-        fprintf(stderr, "Error: Unsupported result type for assembly generation.\n");
+        sprintf(instr.instruction, "mov [%s], %f\n", name, value.doubleValue);
     }
-
-    fclose(outputFile);
+    
+    STACK_NODE *newNode = (STACK_NODE *)malloc(sizeof(STACK_NODE));
+    newNode->instruction = instr;
+    newNode->next = stack->top;
+    stack->top = newNode;
 }
 
-void initAssembler()
+void dumpStack(FILE *file, STACK *stack)
 {
-    FILE *outputFile = fopen("output.asm", "w"); 
-    if (!outputFile)
+    STACK_NODE *current = stack->top;
+    
+    while (current != NULL)
     {
-        perror("Error opening file");
-        return;
+        fprintf(file, "%s", current->instruction.instruction);
+        current = current->next;
     }
-
-    fprintf(outputFile, ";; Assembly code generated by the custom compiler\n");
-    fprintf(outputFile, "section .data\n");
-    fprintf(outputFile, "section .text\n");
-    fprintf(outputFile, "global _start\n");
-
-    fclose(outputFile);
 }
 
-void freeAssembler()
+void assignMathToVariable(STACK *stack, const char *varName)
 {
-    if (remove("output.asm") == 0)
-    {
-        printf("Output file removed successfully.\n");
-    }
-    else
-    {
-        perror("Error removing output file");
-    }
-}
+    ASSEMBLY_INSTRUCTION instr;
+    sprintf(instr.instruction, "mov [%s], eax\n", varName);
 
+    STACK_NODE *newNode = (STACK_NODE *)malloc(sizeof(STACK_NODE));
+    newNode->instruction = instr;
+    newNode->next = stack->top;
+    stack->top = newNode;
+}

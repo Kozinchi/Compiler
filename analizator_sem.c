@@ -22,7 +22,7 @@ int addVariable(const char *name, VAR_TYPE type, VALUE_TYPE value)
         if (strcmp(variables[i].name, name) == 0)
         {
             fprintf(stderr, "Error: Variable '%s' already declared.\n", name);
-            return -1; 
+            return -1;
         }
     }
 
@@ -30,7 +30,7 @@ int addVariable(const char *name, VAR_TYPE type, VALUE_TYPE value)
     variables[varCount].type = type;
     variables[varCount].valueStorage = value;
     varCount++;
-    
+
     return 0;
 }
 
@@ -80,36 +80,34 @@ void performOperation(const char *var1Name, const char *var2Name, const char *op
     VALUE_TYPE result;
     VAR_TYPE resultType;
 
+    resultType = (var1->type == doubleType || var2->type == doubleType) ? doubleType : intType;
+
     if (strcmp(op, "+") == 0)
     {
-        resultType = (var1->type == doubleType || var2->type == doubleType) ? doubleType : intType;
         result.doubleValue = (var1->type == intType ? var1->valueStorage.intValue : var1->valueStorage.doubleValue) +
                              (var2->type == intType ? var2->valueStorage.intValue : var2->valueStorage.doubleValue);
-    } else if (strcmp(op, "-") == 0)
-    
+    } 
+    else if (strcmp(op, "-") == 0)
     {
-        resultType = (var1->type == doubleType || var2->type == doubleType) ? doubleType : intType;
         result.doubleValue = (var1->type == intType ? var1->valueStorage.intValue : var1->valueStorage.doubleValue) -
                              (var2->type == intType ? var2->valueStorage.intValue : var2->valueStorage.doubleValue);
-    } else if (strcmp(op, "*") == 0)
-    
+    } 
+    else if (strcmp(op, "*") == 0)
     {
-        resultType = (var1->type == doubleType || var2->type == doubleType) ? doubleType : intType;
         result.doubleValue = (var1->type == intType ? var1->valueStorage.intValue : var1->valueStorage.doubleValue) *
                              (var2->type == intType ? var2->valueStorage.intValue : var2->valueStorage.doubleValue);
-    } else if (strcmp(op, "/") == 0)
-    
+    } 
+    else if (strcmp(op, "/") == 0)
     {
         if ((var2->type == intType && var2->valueStorage.intValue == 0) || (var2->type == doubleType && var2->valueStorage.doubleValue == 0.0))
         {
             fprintf(stderr, "Error: Division by zero.\n");
             return;
         }
-        resultType = (var1->type == doubleType || var2->type == doubleType) ? doubleType : intType;
         result.doubleValue = (var1->type == intType ? var1->valueStorage.intValue : var1->valueStorage.doubleValue) /
                              (var2->type == intType ? var2->valueStorage.intValue : var2->valueStorage.doubleValue);
-    } else
-    
+    } 
+    else
     {
         fprintf(stderr, "Error: Unsupported operation '%s'.\n", op);
         return;
@@ -117,59 +115,17 @@ void performOperation(const char *var1Name, const char *var2Name, const char *op
 
     char resultVarName[100];
     snprintf(resultVarName, sizeof(resultVarName), "%s_%s_%s", var1Name, var2Name, op);
-    addVariable(resultVarName, resultType, result);
-    
+
+    VALUE_TYPE value;
     if (resultType == intType)
     {
-        printf("Result: %s = %d\n", resultVarName, result.intValue);
+        value.intValue = (int)result.doubleValue;
+        addVariable(resultVarName, intType, value);
+        printf("Result: %s %s %s = %d\n", var1Name, op, var2Name, value.intValue);
     } else
-    
     {
-        printf("Result: %s = %f\n", resultVarName, result.doubleValue);
+        value.doubleValue = result.doubleValue;
+        addVariable(resultVarName, doubleType, value);
+        printf("Result: %s %s %s = %f\n", var1Name, op, var2Name, value.doubleValue);
     }
-}
-
-int main()
-{
-    char varName1[100], varName2[100], operation[10];
-    VALUE_TYPE value1, value2;
-
-    printf("Enter the name of the first variable: ");
-    scanf("%s", varName1);
-    printf("Enter value for %s (int or double): ", varName1);
-    scanf("%lf", &value1.doubleValue);
-    
-    if (value1.doubleValue == (int)value1.doubleValue)
-    {
-        value1.intValue = (int)value1.doubleValue;
-        addVariable(varName1, intType, value1);
-    } else
-    
-    {
-        addVariable(varName1, doubleType, value1);
-    }
-
-    printf("Enter the name of the second variable: ");
-    scanf("%s", varName2);
-    printf("Enter value for %s (int or double): ", varName2);
-    scanf("%lf", &value2.doubleValue);
-    
-    if (value2.doubleValue == (int)value2.doubleValue)
-    {
-        value2.intValue = (int)value2.doubleValue;
-        addVariable(varName2, intType, value2);
-    } else
-    
-    {
-        addVariable(varName2, doubleType, value2);
-    }
-
-    printf("Enter operation (+, -, *, /): ");
-    scanf("%s", operation);
-
-    performOperation(varName1, varName2, operation);
-    
-    freeVariables();
-    
-    return 0;
 }

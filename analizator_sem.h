@@ -67,4 +67,9 @@ typedef struct
     MATH_STACK_NODE *top;
 } MATH_STACK;
 
+int addVariable(const char *name, VAR_TYPE type, VALUE_TYPE value);
+VARIABLE *getVariable(const char *name);
+void performOperation(const char *var1Name, const char *var2Name, const char *op);
+void freeVariables(void); 
+
 #endif

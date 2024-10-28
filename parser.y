@@ -1,62 +1,115 @@
 %{
-#include "analizator_sem.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "analizator_sem.h"
+#include "generator_assembly.h"
+
 void yyerror(const char *s);
 int yylex(void);
+
 %}
 
-%token ASSIGNMENT EQUAL NOT_EQUAL HIGHER_THAN LESS_THAN
-%token SEMICOLON IF ELSE FOR PRINT_FUNCTION
-%token VARIABLE_NAME NUM DNUM STRINGV
-%token ADDITION SUBTRACTION MULTIPLICATION DIVISION
-%type <ival> expression
-%type <sval> statement // Dodaj tę linijkę, aby określić typ dla statement
+%union {
+    double dval;
+    int ival;
+    char* sval;
+    char* stringval;
+}
 
-%%
+%token <ival> NUM
+%token <dval> DNUM
+%token <sval> VARIABLE_NAME
+%token <stringval> STRINGV
+%token ASSIGNMENT EQUAL NOT_EQUAL HIGHER_THAN LESS_THAN HIGHER_EQUAL LESS_EQUAL NEGATION
+%token LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE LEFT_BRACKET RIGHT_BRACKET
+%token DIVISION ADDITION SUBTRACTION MULTIPLICATION INCREMENT DECREMENT
+%token SEMICOLON IF ELSE FOR
+%token INT DOUBLE STRING VAR
+%token COMMA PRINT_FUNCTION MATH_FUNCTION
 
-// Główna struktura programu
+%type <dval> expression
+%type <ival> statement
+
+%% 	
+
 program:
-    program statement
-    | /* empty */
+    | program statement
     ;
 
-// Instrukcje
 statement:
     VARIABLE_NAME ASSIGNMENT expression SEMICOLON
     {
-        add_variable($1, TYPE_INT); // Przykład: zakładamy, że to int
+        VALUE_TYPE value;
+        if ($3.dval != 0.0) {
+            value.doubleValue = $3.dval;
+            addVariable($1, doubleType, value);
+            printf("Dodano zmienną: %s = %f\n", $1, value.doubleValue);
+        } else {
+            value.intValue = $3.ival;
+            addVariable($1, intType, value);
+            printf("Dodano zmienną: %s = %d\n", $1, value.intValue);
+        }
     }
-    | IF '(' expression ')' statement ELSE statement
-    | FOR '(' statement expression SEMICOLON statement ')' statement
-    | PRINT_FUNCTION '(' expression ')' SEMICOLON
+    | IF LEFT_PAREN expression RIGHT_PAREN statement {
+        if ($3.ival) {
+            printf("Warunek prawdziwy: %d\n", $3.ival);
+        }
+    }
     ;
 
-// Wyrażenia
 expression:
-    NUM { $$ = $1; }
-    | VARIABLE_NAME
-    {
-        check_variable_usage($1);
-        $$ = get_variable_type($1);
+    expression ADDITION expression { 
+        $$ = $1 + $3; 
     }
-    | expression ADDITION expression { $$ = $1 + $3; }
-    | expression SUBTRACTION expression { $$ = $1 - $3; }
-    | expression MULTIPLICATION expression { $$ = $1 * $3; }
-    | expression DIVISION expression { $$ = $1 / $3; }
-    | '(' expression ')' { $$ = $2; }
-    | STRINGV { $$ = 0; }
-    | DNUM { $$ = (int)$1; }
+    | expression SUBTRACTION expression { 
+        $$ = $1 - $3; 
+    }
+    | expression MULTIPLICATION expression { 
+        $$ = $1 * $3; 
+    }
+    | expression DIVISION expression { 
+        if ($3 == 0) {
+            printf("Błąd: Dzielenie przez zero.\n");
+            $$ = 0;
+        } else {
+            $$ = $1 / $3; 
+        }
+    }
+    | NUM { 
+        $$ = $1; 
+    }
+    | DNUM { 
+        $$ = $1; 
+    }
+    | VARIABLE_NAME {
+        VARIABLE *var = getVariable($1);
+        if (var) {
+            if (var->type == intType) {
+                $$ = var->valueStorage.intValue;
+            } else {
+                $$ = var->valueStorage.doubleValue;
+            }
+        } else {
+            printf("Błąd: Zmienna '%s' nie została zadeklarowana.\n", $1);
+            $$ = 0;
+        }
+    }
+    | LEFT_PAREN expression RIGHT_PAREN { 
+        $$ = $2; 
+    }
     ;
 
-// Błąd
-%%
+%% 
+
 void yyerror(const char *s) {
-    fprintf(stderr, "Error: %s\n", s);
+    fprintf(stderr, "Błąd: %s\n", s);
 }
 
 int main(void) {
-    initialize_symbol_table();
-    return yyparse();
+    printf("Wprowadź dane (użyj 'exit' aby zakończyć):\n");
+    yyparse();
+    freeVariables();
+    return 0;
 }
+

@@ -45,8 +45,8 @@
 ".m"                { return MATH_FUNCTION; }
 
 [a-zA-Z_][a-zA-Z0-9_]*        { yylval.sval = strdup(yytext); return VARIABLE_NAME; }
-\"[a-zA-Z_][a-zA-Z0-9_ ]*\"   { yylval.stringval = strdup(yytext); return STRINGV; }
+\"[a-zA-Z_][a-zA-Z0-9_ ]*\"   {yylval.stringval = strdup(yytext); return STRINGV; }
 [0-9]+                        { yylval.ival = atoi(yytext); return NUM; }
 [0-9]+\.[0-9]+                { yylval.dval = atof(yytext); return DNUM; }
-[ \t\n\r]+                    ;
+
 %%
