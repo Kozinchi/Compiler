@@ -23,10 +23,10 @@
 "["                 { return LEFT_BRACKET; }
 "]"                 { return RIGHT_BRACKET; }
 
-"/"                 { return DIVISION; }
 "+"                 { return ADDITION; }
 "-"                 { return SUBTRACTION; }
 "*"                 { return MULTIPLICATION; }
+"/"                 { return DIVISION; }
 
 ","                 { return COMMA; }
 
