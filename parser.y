@@ -66,7 +66,6 @@ statement:
     }
     | IF LEFT_PAREN expression RIGHT_PAREN statement
     ;
-
     
 expression:
     expression ADDITION expression { $$ = $1 + $3; }
